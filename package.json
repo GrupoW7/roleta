@@ -1,0 +1,13 @@
+{
+  "name": "roleta-gofest",
+  "version": "1.0.0",
+  "description": "Roleta de brindes da Hello Julia para eventos de tecnologia e inovacao. Captura de lead, roleta animada em 3 idiomas e controle de cotas diarias de premios no backend.",
+  "type": "commonjs",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/smoke.js && node test/sheets.js",
+    "planilha": "node tools/planilha.js"
+  },
+  "dependencies": {}
+}

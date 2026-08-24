@@ -1,0 +1,10 @@
+# O .env do estande NUNCA sobe: tem a URL e o segredo da planilha.
+.env
+.env.example
+
+# Nada disso serve na Vercel (o estado la e efemero, e demo).
+data
+test
+tools
+google-apps-script
+README.md

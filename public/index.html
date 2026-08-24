@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#0A0A12" />
+<title>Roleta Hello Júlia</title>
+<link rel="icon" href="assets/julia-logo.png" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="aurora" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <img class="brand__mark" src="assets/julia-logo.png" alt="Hello Júlia" />
+  </div>
+
+  <div class="topbar__controls">
+    <div class="lang" id="langSwitch" role="group" aria-label="Idioma"></div>
+    <button class="icon-btn" id="soundBtn" type="button" aria-pressed="true">
+      <span id="soundIcon">🔊</span>
+    </button>
+  </div>
+</header>
+
+<main class="stage">
+  <!-- ETAPA 1 — captação do lead -->
+  <section class="screen screen--active" id="screenForm">
+    <div class="hero">
+      <h1 class="hero__title" data-i18n="heroTitle"></h1>
+      <p class="hero__subtitle" data-i18n="heroSubtitle"></p>
+    </div>
+
+    <form class="card form" id="leadForm" novalidate autocomplete="off">
+      <h2 class="card__title" data-i18n="formTitle"></h2>
+
+      <label class="field">
+        <span class="field__label" data-i18n="name"></span>
+        <input class="field__input" id="fName" name="name" type="text" inputmode="text" maxlength="80" />
+        <span class="field__error" id="errName"></span>
+      </label>
+
+      <div class="field">
+        <label class="field__label" for="fWhats" data-i18n="whatsapp"></label>
+        <div class="field__row">
+          <div class="ddi">
+            <span class="ddi__plus" aria-hidden="true">+</span>
+            <input class="field__input ddi__input" id="fDdi" name="ddi" type="tel"
+                   inputmode="numeric" maxlength="4" />
+          </div>
+          <input class="field__input" id="fWhats" name="whatsapp" type="tel" inputmode="tel" maxlength="24" />
+        </div>
+        <span class="field__error" id="errWhats"></span>
+      </div>
+
+      <label class="field">
+        <span class="field__label" data-i18n="segment"></span>
+        <select class="field__input field__select" id="fSegment" name="segment"></select>
+        <span class="field__error" id="errSegment"></span>
+      </label>
+
+      <label class="consent">
+        <input type="checkbox" id="fConsent" />
+        <span class="consent__box" aria-hidden="true"></span>
+        <span class="consent__text" data-i18n="consent"></span>
+      </label>
+      <span class="field__error field__error--consent" id="errConsent"></span>
+
+      <button class="btn btn--primary btn--block" id="submitBtn" type="submit" data-i18n="submit"></button>
+      <p class="form__privacy" data-i18n="privacy"></p>
+    </form>
+  </section>
+
+  <!-- ETAPA 2 — roleta -->
+  <section class="screen" id="screenWheel">
+    <p class="greeting" id="greeting"></p>
+    <p class="hint" id="hint" data-i18n="spinHint"></p>
+
+    <div class="wheel-stage">
+      <div class="wheel-glow" aria-hidden="true"></div>
+      <div class="wheel-rim">
+        <div class="wheel-rotor" id="rotor">
+          <svg id="wheelSvg" viewBox="0 0 400 400" role="img" aria-label="Roleta de prêmios"></svg>
+        </div>
+      </div>
+      <div class="wheel-pointer" aria-hidden="true"></div>
+      <button class="hub" id="spinBtn" type="button">
+        <span class="hub__label" data-i18n="spin"></span>
+      </button>
+    </div>
+
+    <p class="spins" id="spins"></p>
+  </section>
+</main>
+
+<!-- RESULTADO -->
+<div class="overlay" id="overlay" aria-hidden="true">
+  <canvas class="confetti" id="confetti"></canvas>
+  <div class="result" id="result" role="dialog" aria-modal="true">
+    <p class="result__eyebrow" id="resultEyebrow"></p>
+    <h2 class="result__title" id="resultTitle"></h2>
+    <p class="result__desc" id="resultDesc"></p>
+    <div class="result__code" id="resultCode" hidden>
+      <span class="result__codeLabel" data-i18n="codeLabel"></span>
+      <strong class="result__codeValue" id="resultCodeValue"></strong>
+      <span class="result__codeHelp" data-i18n="codeHelp"></span>
+    </div>
+    <div class="result__actions">
+      <button class="btn btn--primary btn--block" id="againBtn" type="button" data-i18n="spinAgain"></button>
+      <button class="btn btn--ghost btn--block" id="finishBtn" type="button" data-i18n="newVisitor"></button>
+    </div>
+    <p class="result__idle" id="idleNote"></p>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="i18n.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

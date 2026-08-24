@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Painel do estande · Roleta Hello Júlia</title>
+<link rel="icon" href="assets/julia-logo.png" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .stage { place-items: start center; }
+  .screen { display: flex; max-width: 720px; }
+  .panel { width: 100%; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin: 4px 0 20px; }
+  .kpi { padding: 14px 16px; border-radius: 0.9rem; background: hsl(230 25% 14% / 0.7); border: 1px solid var(--border); }
+  .kpi__label { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  .kpi__value { display: block; margin-top: 4px; font-size: 1.5rem; font-weight: 800; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th, td { padding: 11px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .bar { height: 6px; border-radius: 999px; background: hsl(230 25% 18%); overflow: hidden; margin-top: 6px; }
+  .bar span { display: block; height: 100%; background: var(--gradient-primary); }
+  .pill { font-size: 0.68rem; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+  .mini { width: 108px; padding: 8px 10px; font-size: 0.9rem; }
+  td .mini { width: 74px; }
+  .btn--sm { padding: 11px 16px; font-size: 0.88rem; }
+  .muted { color: var(--muted); font-size: 0.82rem; }
+  .sold-out td:first-child { color: hsl(0 84% 72%); }
+  .window-box { margin: 0 0 22px; padding: 16px; border-radius: 0.9rem; border: 1px solid var(--border); background: hsl(230 25% 12% / 0.6); }
+  .holding { color: hsl(38 95% 68%); }
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <img class="brand__mark" src="assets/julia-logo.png" alt="Hello Júlia" />
+    <span class="brand__kicker">Painel do estande</span>
+  </div>
+  <a class="btn btn--ghost btn--sm" href="index.html">Abrir roleta</a>
+</header>
+
+<main class="stage">
+  <section class="screen screen--active">
+    <div class="card panel">
+      <h2 class="card__title">Cotas de hoje</h2>
+
+      <div class="row" style="margin-bottom:18px">
+        <input class="field__input" id="token" type="password" placeholder="Token do painel" style="flex:1;min-width:180px" />
+        <button class="btn btn--primary btn--sm" id="loadBtn" type="button">Entrar</button>
+      </div>
+
+      <div id="content" hidden>
+        <div class="kpis">
+          <div class="kpi"><span class="kpi__label">Dia</span><span class="kpi__value" id="kDay">—</span></div>
+          <div class="kpi"><span class="kpi__label">Agora</span><span class="kpi__value" id="kNow">—</span></div>
+          <div class="kpi"><span class="kpi__label">Leads</span><span class="kpi__value" id="kLeads">0</span></div>
+          <div class="kpi"><span class="kpi__label">Giros</span><span class="kpi__value" id="kSpins">0</span></div>
+        </div>
+
+        <div class="window-box">
+          <div class="row" style="justify-content:space-between">
+            <strong style="font-size:0.92rem">Janela do evento</strong>
+            <span class="muted" id="progressLabel">—</span>
+          </div>
+          <div class="bar" style="margin:10px 0 12px"><span id="progressBar" style="width:0%"></span></div>
+          <div class="row">
+            <input class="field__input mini" id="winStart" type="time" />
+            <span class="muted">até</span>
+            <input class="field__input mini" id="winEnd" type="time" />
+            <button class="btn btn--ghost btn--sm" id="winBtn" type="button">Salvar horário</button>
+          </div>
+          <p class="muted" style="margin:10px 0 0">
+            Os brindes são liberados aos poucos dentro desta janela, para não acabarem na primeira hora.
+          </p>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Prêmio</th>
+              <th class="num">Saíram</th>
+              <th class="num">Liberado</th>
+              <th class="num">Restam</th>
+              <th class="num">Ajuste</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+
+        <div class="row" style="margin-top:22px">
+          <button class="btn btn--ghost btn--sm" id="refreshBtn" type="button">Atualizar</button>
+          <button class="btn btn--ghost btn--sm" id="csvBtn" type="button">Exportar CSV</button>
+          <button class="btn btn--ghost btn--sm" id="sheetsBtn" type="button" hidden>Reenviar para a planilha</button>
+          <button class="btn btn--ghost btn--sm" id="resetBtn" type="button">Zerar o dia</button>
+        </div>
+        <p class="muted" style="margin-top:14px" id="sheetsStatus">—</p>
+        <p class="muted" style="margin-top:6px" id="status">Atualiza automaticamente a cada 10s.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var LABELS = {
+    brinde_especial: 'Brinde especial',
+    mes_gratis: '1 mês grátis de assinatura',
+    teste_setup: 'Teste grátis com setup',
+    desconto_anual: '10% no plano anual',
+    tente_outra_vez: 'Tente outra vez',
+    nao_foi_dessa_vez: 'Não foi dessa vez',
+  };
+
+  var tokenInput = document.getElementById('token');
+  var winStart = document.getElementById('winStart');
+  var winEnd = document.getElementById('winEnd');
+  var content = document.getElementById('content');
+  var rows = document.getElementById('rows');
+  var status = document.getElementById('status');
+  var timer = null;
+
+  function token() { return tokenInput.value.trim(); }
+
+  async function call(path, options) {
+    var opts = options || {};
+    opts.headers = Object.assign({ 'Content-Type': 'application/json', 'X-Admin-Token': token() }, opts.headers || {});
+    var res = await fetch(path, opts);
+    if (res.status === 401) throw new Error('Token inválido.');
+    if (!res.ok) throw new Error('Falha na requisição (' + res.status + ').');
+    return res.json();
+  }
+
+  /** Estado do envio para a planilha do Google (fila, erros, total enviado). */
+  function renderSheets(info) {
+    var el = document.getElementById('sheetsStatus');
+    var btn = document.getElementById('sheetsBtn');
+    var s = info || { enabled: false };
+
+    if (!s.enabled) {
+      btn.hidden = true;
+      el.textContent = 'Planilha do Google: desligada — defina SHEETS_WEBHOOK_URL no .env.';
+      return;
+    }
+
+    btn.hidden = false;
+    var txt = 'Planilha do Google: ' + s.sent + ' linha(s) enviada(s)';
+    if (s.pending) txt += ' · ' + s.pending + ' na fila';
+    if (s.lastError) txt += ' · último erro: ' + s.lastError;
+    else if (!s.pending) txt += ' · tudo sincronizado';
+    el.textContent = txt + '.';
+  }
+
+  function render(data) {
+    document.getElementById('kDay').textContent = data.day;
+    document.getElementById('kNow').textContent = data.now;
+    document.getElementById('kLeads').textContent = data.leads;
+    document.getElementById('kSpins').textContent = data.spins;
+
+    var pctDay = Math.round(data.progress * 100);
+    document.getElementById('progressBar').style.width = pctDay + '%';
+    document.getElementById('progressLabel').textContent = data.pacing
+      ? data.window.start + '–' + data.window.end + ' · ' + pctDay + '% do dia'
+      : 'liberação progressiva desligada';
+    if (document.activeElement !== winStart) winStart.value = data.window.start;
+    if (document.activeElement !== winEnd) winEnd.value = data.window.end;
+
+    renderSheets(data.sheets);
+
+    rows.innerHTML = '';
+    data.prizes.forEach(function (p) {
+      var tr = document.createElement('tr');
+      var soldOut = p.left === 0;
+      if (soldOut) tr.className = 'sold-out';
+
+      var pct = p.dailyLimit ? Math.min(100, Math.round((p.used / p.dailyLimit) * 100)) : 0;
+      var limitText = p.dailyLimit === null ? 'ilimitado' : p.dailyLimit;
+
+      var tdName = document.createElement('td');
+      tdName.innerHTML = '<strong>' + (LABELS[p.id] || p.id) + '</strong>' +
+        ' <span class="pill">cota: ' + limitText + '</span>' +
+        (p.dailyLimit ? '<div class="bar"><span style="width:' + pct + '%"></span></div>' : '');
+      tr.appendChild(tdName);
+
+      var tdUsed = document.createElement('td');
+      tdUsed.className = 'num';
+      tdUsed.textContent = p.used;
+      tr.appendChild(tdUsed);
+
+      // "Liberado" = quanto já pode ter saído a esta altura do dia.
+      var tdReleased = document.createElement('td');
+      tdReleased.className = 'num';
+      if (p.released === null) {
+        tdReleased.textContent = '∞';
+      } else {
+        tdReleased.textContent = p.released;
+        if (p.available === 0 && p.left > 0) {
+          tdReleased.className += ' holding';
+          tdReleased.title = 'Segurando até a próxima liberação';
+        }
+      }
+      tr.appendChild(tdReleased);
+
+      var tdLeft = document.createElement('td');
+      tdLeft.className = 'num';
+      tdLeft.textContent = p.left === null ? '∞' : p.left;
+      tr.appendChild(tdLeft);
+
+      var tdAdjust = document.createElement('td');
+      tdAdjust.className = 'num';
+      var input = document.createElement('input');
+      input.className = 'field__input mini';
+      input.type = 'number';
+      input.min = '0';
+      input.value = p.used;
+      input.title = 'Corrigir quantos já saíram hoje';
+      input.addEventListener('change', function () {
+        call('/api/admin/set-count', {
+          method: 'POST',
+          body: JSON.stringify({ prizeId: p.id, used: Number(input.value) }),
+        }).then(render).catch(fail);
+      });
+      tdAdjust.appendChild(input);
+      tr.appendChild(tdAdjust);
+
+      rows.appendChild(tr);
+    });
+    status.textContent = 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR');
+  }
+
+  function fail(err) {
+    status.textContent = err.message;
+  }
+
+  function load() {
+    call('/api/admin/stats').then(function (data) {
+      content.hidden = false;
+      localStorage.setItem('roleta_admin_token', token());
+      render(data);
+      if (!timer) timer = setInterval(function () { call('/api/admin/stats').then(render).catch(fail); }, 10000);
+    }).catch(fail);
+  }
+
+  document.getElementById('loadBtn').addEventListener('click', load);
+  tokenInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') load(); });
+  document.getElementById('refreshBtn').addEventListener('click', load);
+
+  document.getElementById('winBtn').addEventListener('click', function () {
+    call('/api/admin/event-window', {
+      method: 'POST',
+      body: JSON.stringify({ start: winStart.value, end: winEnd.value }),
+    }).then(function (data) {
+      render(data);
+      status.textContent = 'Janela do evento salva: ' + data.window.start + '–' + data.window.end;
+    }).catch(function () {
+      status.textContent = 'Horário inválido: o fim precisa ser depois do início.';
+    });
+  });
+
+  document.getElementById('csvBtn').addEventListener('click', function () {
+    window.location.href = '/api/admin/export.csv?token=' + encodeURIComponent(token());
+  });
+
+  document.getElementById('sheetsBtn').addEventListener('click', function () {
+    status.textContent = 'Reenviando a fila para a planilha…';
+    call('/api/admin/sheets-flush', { method: 'POST' }).then(function (data) {
+      render(data);
+      status.textContent = 'Reenvio disparado. O resultado aparece na próxima atualização.';
+    }).catch(fail);
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function () {
+    if (!window.confirm('Zerar as cotas e os leads de hoje? Os registros já exportados em data/ são mantidos.')) return;
+    call('/api/admin/reset-day', { method: 'POST' }).then(render).catch(fail);
+  });
+
+  var saved = localStorage.getItem('roleta_admin_token');
+  if (saved) { tokenInput.value = saved; load(); }
+})();
+</script>
+</body>
+</html>

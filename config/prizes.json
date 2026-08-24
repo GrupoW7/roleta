@@ -1,0 +1,93 @@
+{
+  "_doc": [
+    "label: nome do premio como sai no CSV e na planilha do Google.",
+    "dailyLimit: quantas vezes o premio pode sair por dia (null = ilimitado).",
+    "weight: peso relativo no sorteio enquanto houver estoque liberado.",
+    "eventWindow: horario de funcionamento do estande, no fuso de timezone.",
+    "pacing: libera a cota aos poucos ao longo da janela em vez de tudo na abertura.",
+    "  buffer = quantos ficam disponiveis ja na abertura (colchao para nao travar o inicio).",
+    "  Ex.: cota 10 em 8h -> ~1 liberado a cada 48 min.",
+    "Quando o estoque liberado se esgota, o premio sai do sorteio ate a proxima liberacao.",
+    "wheelOrder define a ordem visual dos gomos na roleta (indice 0 = primeiro gomo, no topo)."
+  ],
+  "timezone": "America/Sao_Paulo",
+  "eventWindow": {
+    "start": "09:00",
+    "end": "17:00"
+  },
+  "pacing": {
+    "enabled": true,
+    "buffer": 1
+  },
+  "maxSpinsPerLead": 2,
+  "wheelOrder": [
+    "mes_gratis",
+    "tente_outra_vez",
+    "desconto_anual",
+    "nao_foi_dessa_vez",
+    "teste_setup"
+  ],
+  "prizes": [
+    {
+      "id": "mes_gratis",
+      "label": "1 mês grátis de assinatura",
+      "dailyLimit": 10,
+      "weight": 14,
+      "isPrize": true,
+      "needsCode": true,
+      "color": "#22D3EE",
+      "colorDark": "#0E7490"
+    },
+    {
+      "id": "tente_outra_vez",
+      "label": "Tente outra vez",
+      "dailyLimit": 20,
+      "weight": 24,
+      "isPrize": false,
+      "needsCode": false,
+      "color": "#3F3F63",
+      "colorDark": "#2A2A44"
+    },
+    {
+      "id": "desconto_anual",
+      "label": "10% de desconto no plano anual",
+      "dailyLimit": 10,
+      "weight": 14,
+      "isPrize": true,
+      "needsCode": true,
+      "color": "#E879F9",
+      "colorDark": "#A21CAF"
+    },
+    {
+      "id": "nao_foi_dessa_vez",
+      "label": "Não foi dessa vez",
+      "dailyLimit": null,
+      "weight": 34,
+      "isPrize": false,
+      "needsCode": false,
+      "color": "#26263C",
+      "colorDark": "#191926"
+    },
+    {
+      "id": "teste_setup",
+      "label": "Teste grátis da Júlia com setup",
+      "dailyLimit": 10,
+      "weight": 14,
+      "isPrize": true,
+      "needsCode": true,
+      "color": "#34D399",
+      "colorDark": "#047857"
+    }
+  ],
+  "segments": [
+    "ecommerce",
+    "saude",
+    "educacao",
+    "servicos",
+    "industria",
+    "imobiliario",
+    "tecnologia",
+    "varejo",
+    "outro"
+  ]
+}
