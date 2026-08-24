@@ -602,9 +602,10 @@
       el.resultCode.hidden = true;
     }
 
-    el.againBtn.hidden = app.spinsLeft <= 0;
+    var showAgain = isRetry && app.spinsLeft > 0;
+    el.againBtn.hidden = !showAgain;
     el.againBtn.textContent = dict.spinAgain;
-    el.finishBtn.textContent = app.spinsLeft > 0 ? dict.finish : dict.newVisitor;
+    el.finishBtn.textContent = showAgain ? dict.finish : dict.newVisitor;
 
     el.overlay.classList.add('overlay--open');
     el.overlay.setAttribute('aria-hidden', 'false');
