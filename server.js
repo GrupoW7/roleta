@@ -737,6 +737,23 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, adminStats());
       }
 
+      if (route === 'POST /api/admin/thankyou-test') {
+        // Dispara um evento de teste direto, sem precisar rodar o fluxo completo do form.
+        thankYou.enqueue({
+          chave: `teste-${Date.now()}`,
+          nome: 'Teste Admin',
+          whatsapp: '+5511999999999',
+          segmento: 'tecnologia',
+          idioma: 'pt',
+          premio: 'Teste manual',
+          ganhou: 'sim',
+          cupom: '',
+          lead_id: 'teste-admin',
+        });
+        await thankYou.flushNow();
+        return sendJson(res, 200, thankYou.status());
+      }
+
       if (route === 'GET /api/admin/export.csv') {
         const csv = adminCsv();
         res.writeHead(200, {

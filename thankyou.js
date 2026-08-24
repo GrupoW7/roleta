@@ -95,7 +95,10 @@ function createThankYou(options) {
           body: JSON.stringify(evento),
           signal: AbortSignal.timeout(TIMEOUT_MS),
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) {
+          const detail = await res.text().catch(() => '');
+          throw new Error(`HTTP ${res.status}${detail ? ` - ${detail.slice(0, 300)}` : ''}`);
+        }
       }
 
       queue = queue.slice(batch.length);
