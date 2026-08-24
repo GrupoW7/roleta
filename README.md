@@ -184,7 +184,9 @@ planilha** para forçar a tentativa.
 > instância conta a sua) e o estande entregaria mais brindes do que existe de estoque.
 > A versão hospedada serve para mostrar a roleta, testar no celular e validar o visual.
 
-O projeto já está ligado ao projeto `roleta-gofest` da Vercel (`.vercel/project.json`):
+O repositório https://github.com/GrupoW7/roleta está ligado ao projeto `roleta-gofest`
+da Vercel: **push na `main` publica em produção sozinho**. Para subir sem passar pelo
+git (`.vercel/project.json` já deixa a pasta vinculada):
 
 ```bash
 npx vercel@latest login
@@ -196,14 +198,20 @@ npx vercel@latest deploy --prod
 
 O que já está configurado:
 
-- `api/index.js` — adaptador que entrega as requisições ao mesmo `server.js`
-- `vercel.json` — roteia tudo para a função e define `DATA_DIR=/tmp/roleta`,
-  `TZ_EVENT`; o `ADMIN_TOKEN` da demo fica nas variáveis de ambiente do projeto
-- `.vercelignore` — impede que `.env`, `data/`, testes e o Apps Script subam.
-  Sem `SHEETS_WEBHOOK_URL` lá, **a demo não escreve na planilha de produção**
+- `api/index.js` — adaptador que entrega as requisições ao mesmo `server.js`. Também
+  define `DATA_DIR=/tmp/roleta` (único caminho gravável numa função) e liga o envio
+  **síncrono** para a planilha: a instância congela quando a resposta sai, então o envio
+  agendado do estande nunca rodaria
+- `vercel.json` — roteia tudo para a função serverless
+- `.vercelignore` — impede que `.env`, `data/`, testes e o Apps Script subam
 
-Para ligar a planilha na demo também, use `npx vercel@latest env add SHEETS_WEBHOOK_URL`
-e `SHEETS_SECRET` — lembrando que aí os testes de quem abrir o link viram linhas na planilha.
+> **Repositório público.** Segredo nenhum entra no código: `SHEETS_WEBHOOK_URL`,
+> `SHEETS_SECRET` e `ADMIN_TOKEN` da demo vivem nas variáveis de ambiente do projeto
+> na Vercel, e os do estande, no `.env` local (que está no `.gitignore`).
+
+**A planilha está ligada na demo**: quem abrir o link e girar vira linha na planilha do
+evento. Para desligar, `npx vercel@latest env rm SHEETS_WEBHOOK_URL production` seguido
+de um deploy novo.
 
 ## Robustez no estande
 
