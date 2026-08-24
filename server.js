@@ -20,6 +20,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { createSheets } = require('./sheets.js');
+const { createThankYou } = require('./thankyou.js');
 
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, 'public');
@@ -29,6 +30,7 @@ const LEADS_FILE = path.join(DATA_DIR, 'leads.jsonl');
 const DRAWS_FILE = path.join(DATA_DIR, 'draws.jsonl');
 const CONFIG_FILE = path.join(ROOT, 'config', 'prizes.json');
 const SHEETS_QUEUE_FILE = path.join(DATA_DIR, 'sheets-queue.jsonl');
+const THANKYOU_QUEUE_FILE = path.join(DATA_DIR, 'thankyou-queue.jsonl');
 
 /* ------------------------------------------------------------------ */
 /* .env loader simples                                                 */
@@ -78,6 +80,38 @@ const sheets = createSheets({
 /** No modo sync a resposta espera a planilha; no estande isso e no-op. */
 async function flushSheetsIfSync() {
   if (sheets.sync) await sheets.flushNow();
+}
+
+/**
+ * Webhook do agente (z-whitelabel) para disparar a mensagem de agradecimento.
+ * So dispara depois que cadastro + giro terminam (ver handleSpin). URL default
+ * e a combinacao agentIncomingWebhookId=5753 + key fornecidas; pode ser
+ * substituida por THANKYOU_WEBHOOK_URL no .env sem tocar no codigo.
+ */
+const THANKYOU_DEFAULT_URL =
+  'https://api.z-whitelabel.com/v1/webhook/agent-incoming-webhook-event/create?agentIncomingWebhookId=5753&key=ef4af34d-2b8d-4e60-8bd2-1caa0cd5e7b9';
+const thankYou = createThankYou({
+  url: process.env.THANKYOU_WEBHOOK_URL || THANKYOU_DEFAULT_URL,
+  queueFile: THANKYOU_QUEUE_FILE,
+  sync: process.env.SHEETS_SYNC === '1',
+});
+
+async function flushThankYouIfSync() {
+  if (thankYou.sync) await thankYou.flushNow();
+}
+
+function thankYouRow({ lead, prize, code }) {
+  return {
+    chave: `${lead.id}#agradecimento`,
+    nome: lead.name,
+    whatsapp: `+${lead.phone}`,
+    segmento: lead.segment,
+    idioma: lead.lang,
+    premio: prize ? prize.label || prize.id : '',
+    ganhou: prize ? (prize.isPrize ? 'sim' : 'nao') : '',
+    cupom: code || '',
+    lead_id: lead.id,
+  };
 }
 const PRIZE_BY_ID = new Map(PRIZES.map((p) => [p.id, p]));
 const WHEEL_ORDER = config.wheelOrder;
@@ -599,6 +633,14 @@ async function handleSpin(req, res) {
   sheets.enqueue(sheetRow({ lead, spin: lead.spinsUsed, at, prize: picked, code }));
   await flushSheetsIfSync();
 
+  // So dispara o agradecimento quando o visitante nao tiver mais giros (cadastro
+  // + giro(s) encerrados de vez) - evita mandar a mensagem no meio de um "tente outra vez".
+  const spinsLeftNow = Math.max(0, Math.min(lead.spinsAllowed, MAX_SPINS) - lead.spinsUsed);
+  if (spinsLeftNow <= 0) {
+    thankYou.enqueue(thankYouRow({ lead, prize: picked, code }));
+    await flushThankYouIfSync();
+  }
+
   return sendJson(res, 200, {
     prizeId: picked.id,
     leadToken: signLead(lead),
@@ -759,6 +801,7 @@ const server = http.createServer(async (req, res) => {
 
 loadState();
 sheets.start();
+thankYou.start();
 
 if (require.main === module) {
   server.listen(PORT, () => {
@@ -769,6 +812,7 @@ if (require.main === module) {
     console.log(`  -> painel:  http://localhost:${PORT}/admin.html`);
     console.log(`  dia ${key} (${TIMEZONE}) | giros hoje: ${day.spins}`);
     console.log(`  planilha: ${sheets.enabled ? 'ligada' : 'desligada (defina SHEETS_WEBHOOK_URL no .env)'}`);
+    console.log(`  agradecimento: ${thankYou.enabled ? 'ligado' : 'desligado (defina THANKYOU_WEBHOOK_URL no .env)'}`);
     console.log('');
   });
 }
