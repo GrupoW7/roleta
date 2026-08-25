@@ -89,7 +89,7 @@ async function flushSheetsIfSync() {
  * substituida por THANKYOU_WEBHOOK_URL no .env sem tocar no codigo.
  */
 const THANKYOU_DEFAULT_URL =
-  'https://api.z-whitelabel.com/v1/webhook/agent-incoming-webhook-event/create?agentIncomingWebhookId=5753&key=ef4af34d-2b8d-4e60-8bd2-1caa0cd5e7b9';
+  'https://api.z-whitelabel.com/v1/webhook/agent-incoming-webhook-event/create?agentIncomingWebhookId=5754&key=3b2ca465-f037-40c8-b8d0-79bb7dfc31c7';
 const thankYou = createThankYou({
   url: process.env.THANKYOU_WEBHOOK_URL || THANKYOU_DEFAULT_URL,
   queueFile: THANKYOU_QUEUE_FILE,
