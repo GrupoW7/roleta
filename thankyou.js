@@ -99,6 +99,7 @@ function createThankYou(options) {
           const detail = await res.text().catch(() => '');
           throw new Error(`HTTP ${res.status}${detail ? ` - ${detail.slice(0, 300)}` : ''}`);
         }
+        console.log(`[agradecimento] enviado com sucesso: ${evento.chave} (whatsapp ${evento.whatsapp})`);
       }
 
       queue = queue.slice(batch.length);
