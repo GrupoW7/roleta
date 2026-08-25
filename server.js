@@ -88,8 +88,7 @@ async function flushSheetsIfSync() {
  * e a combinacao agentIncomingWebhookId=5753 + key fornecidas; pode ser
  * substituida por THANKYOU_WEBHOOK_URL no .env sem tocar no codigo.
  */
-const THANKYOU_DEFAULT_URL =
-  'https://api.z-whitelabel.com/v1/webhook/agent-incoming-webhook-event/create?agentIncomingWebhookId=5754&key=3b2ca465-f037-40c8-b8d0-79bb7dfc31c7';
+const THANKYOU_DEFAULT_URL = 'https://hook.us1.make.com/arg7kwv1gggzklom6vr59erre4g1d98r';
 const thankYou = createThankYou({
   url: process.env.THANKYOU_WEBHOOK_URL || THANKYOU_DEFAULT_URL,
   queueFile: THANKYOU_QUEUE_FILE,
